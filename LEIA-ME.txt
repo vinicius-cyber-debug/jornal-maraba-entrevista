@@ -1,0 +1,27 @@
+JORNAL MARABÁ — PROTÓTIPO PARA ENTREVISTA
+
+Extraia todo o ZIP e abra index.html no navegador. Mantenha os
+arquivos JS, CSS e a pasta midia junto dele. Não é preciso instalar
+dependências. Se o navegador restringir a persistência em arquivos
+locais, use a versão hospedada.
+
+Roteiro sugerido
+1. Abra Cidadania e leia uma matéria.
+2. Busque por “emancipacao” sem acento.
+3. Abra Edições em PDF e clique em Ler edição.
+4. Na home, vote na Pesquisa Popular e confira os resultados.
+5. No rodapé, abra Painel demonstrativo, entre como editor e publique uma matéria.
+   Confira na home, na editoria e na busca. Depois despublique.
+6. Teste Fale Conosco usando dados fictícios.
+
+Votos, preferências e alterações editoriais ficam no navegador.
+O formulário não envia nem guarda os dados preenchidos.
+Temperatura, resultados e PDF são demonstrativos. A ponte foi
+redesenhada a partir da referência. Rádio e TV estão em breve.
+Contas de teste do painel
+editor / Editor123! — pode publicar e despublicar.
+reporter / Reporter123! — pode criar e editar rascunhos.
+
+O login é uma simulação no navegador. As credenciais são públicas.
+Libras, CMS e serviços de produção não estão integrados.
+Implementação estática com HTML, CSS e JavaScript.

@@ -1,0 +1,28 @@
+<!doctype html>
+<html lang="pt-BR">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<meta name="robots" content="noindex,nofollow">
+<meta name="description" content="Protótipo do portal de notícias Jornal Marabá, Pará.">
+<title>Jornal Marabá</title>
+<link rel="stylesheet" href="estilo.css">
+<script defer src="dados.js"></script>
+<script defer src="portal.js"></script>
+</head>
+<body>
+<a class="skip" href="#conteudo">Ir ao conteúdo</a>
+<header class="wrap">
+  <div class="utility">
+    <div class="weather"><span aria-hidden="true">☀</span><div><strong>31 °C</strong> · Marabá (PA) <small>Ilustrativo</small><br><span id="data"></span></div></div>
+    <nav class="institutional" aria-label="Institucional"><a href="#/">Home</a><a href="#/quem-somos">Quem Somos</a><a href="#/contato">Fale Conosco</a><a href="#/privacidade">Política de Privacidade</a></nav>
+    <div class="controls"><a href="#/busca" aria-label="Buscar"><svg viewBox="0 0 24 24" width="17" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true"><circle cx="10" cy="10" r="6"/><path d="m14 14 6 6"/></svg></a><button type="button" id="contraste" aria-label="Alternar contraste" aria-pressed="false">◐</button><button type="button" id="mais" aria-label="Aumentar texto">A+</button><button type="button" id="menos" aria-label="Diminuir texto">A−</button></div>
+  </div>
+  <a class="brand" href="#/">Jornal <svg viewBox="0 0 104 53" aria-hidden="true"><path fill="currentColor" d="M1 43h21v-6h8v-8h8v-5h4v-8h7V9h7V5h6v5h5v5h6v7h5v7h7v8h17v15H1z"/><path d="M37 36Q60 -12 82 36M48 34V20m11 11V9m11 23V16" stroke="var(--paper)" stroke-width="2" fill="none"/></svg> Marabá</a>
+  <nav id="editorias" class="editorias" aria-label="Editorias"></nav>
+</header>
+<main class="wrap" id="conteudo" tabindex="-1"></main>
+<footer id="rodape"></footer>
+<div id="aviso" class="toast" role="status" aria-live="polite"></div>
+</body>
+</html>
