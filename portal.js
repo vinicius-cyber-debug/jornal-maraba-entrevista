@@ -11,20 +11,23 @@ let prefs=storage.get('acessibilidade',{size:100,contrast:false});
 const published=()=>items.filter(x=>x.publicado).sort((a,b)=>b.data.localeCompare(a.data));
 const date=x=>new Intl.DateTimeFormat('pt-BR',{dateStyle:'long',timeZone:'UTC'}).format(new Date(x+'T12:00:00Z'));
 const today=()=>new Intl.DateTimeFormat('sv-SE',{timeZone:'America/Belem'}).format(new Date());
-$('#data').textContent=new Intl.DateTimeFormat('pt-BR',{dateStyle:'full',timeZone:'America/Belem'}).format(new Date());
 const a=(name,url)=>`<a href="#/${url}">${esc(name)}</a>`;
 const options=(names,selected='')=>names.map(x=>`<option${x===selected?' selected':''}>${esc(x)}</option>`).join('');
 const categories=EDITORIAS.filter(x=>x!=='Colunistas');
 const categoryLinks=names=>names.map(x=>a(x,'editoria/'+slug(x))).join('');
 const columnLinks=()=>COLUNAS.map(x=>a(x,'coluna/'+slug(x))).join('');
-$('#editorias').innerHTML=categoryLinks(EDITORIAS);
-$('#rodape').innerHTML=`<div class="wrap">${$('.brand').outerHTML}<div class="footer-grid"><section><h2>Editorias</h2>${categoryLinks(categories)}</section><section><h2>Colunistas</h2>${columnLinks()}</section><section><h2>Portal</h2>${a('Edições em PDF','edicoes')}${a('Busca','busca')}${a('Arquivo','arquivo')}${a('Fale Conosco / Anuncie','contato')}${a('Privacidade','privacidade')}</section><section><h2>Jornal Marabá</h2>${a('Quem Somos','quem-somos')}${a('Painel demonstrativo','painel')}</section></div><p class="end">Jornal Marabá · Protótipo para entrevista</p></div>`;
+const isAdmin = document.body.dataset.area === 'admin';
 const notice=t=>{const n=$('#aviso');n.textContent=t;clearTimeout(notice.timer);notice.timer=setTimeout(()=>n.textContent='',3200)};
+if (!isAdmin) {
+$('#data').textContent=new Intl.DateTimeFormat('pt-BR',{dateStyle:'full',timeZone:'America/Belem'}).format(new Date());
+$('#editorias').innerHTML=categoryLinks(EDITORIAS);
+$('#rodape').innerHTML=`<div class="wrap">${$('.brand').outerHTML}<div class="footer-grid"><section><h2>Editorias</h2>${categoryLinks(categories)}</section><section><h2>Colunistas</h2>${columnLinks()}</section><section><h2>Portal</h2>${a('Edições em PDF','edicoes')}${a('Busca','busca')}${a('Arquivo','arquivo')}${a('Fale Conosco / Anuncie','contato')}${a('Privacidade','privacidade')}</section><section><h2>Jornal Marabá</h2>${a('Quem Somos','quem-somos')}<a href="admin.html">Painel demonstrativo</a></section></div><p class="end">Jornal Marabá · Protótipo para entrevista</p></div>`;
 function applyPrefs(){root.style.fontSize=prefs.size+'%';root.toggleAttribute('data-contrast',prefs.contrast);$('#contraste').setAttribute('aria-pressed',String(prefs.contrast));$('#mais').disabled=prefs.size>=125;$('#menos').disabled=prefs.size<=90;storage.set('acessibilidade',prefs)}
 $('#mais').onclick=()=>{prefs.size=Math.min(125,prefs.size+5);applyPrefs()};
 $('#menos').onclick=()=>{prefs.size=Math.max(90,prefs.size-5);applyPrefs()};
 $('#contraste').onclick=()=>{prefs.contrast=!prefs.contrast;applyPrefs()};
 applyPrefs();
+}
 const image=(file,alt)=>`<img src="midia/${esc(file)}" alt="${esc(alt)}" loading="lazy">`;
 const ad=(label='Anuncie aqui')=>`<div class="ad-box"><span><strong>Publicidade</strong><br>${esc(label)}</span></div>`;
 const empty=(t='Nenhuma matéria publicada nesta seção.')=>`<p class="placeholder">${esc(t)}</p>`;
@@ -123,40 +126,166 @@ function showDemoLogin() {
     out.focus();
   };
 }
-function panel(focus=false){
- if (!currentAccount) {
-  showDemoLogin();
-  return;
- }
- if (!currentAccount.canPublish && items.find(item => item.id === editing)?.publicado) editing = null;
- const p=items.find(x=>x.id===editing);
- out.innerHTML=page(title('Painel editorial','Ambiente demonstrativo. As mudanças são salvas somente neste navegador.')+`<h2 class="section-title" id="edicao-titulo">${p?'Editar matéria':'Nova matéria'}</h2><form class="form" id="editor-form"><label>Título<input required name="titulo" maxlength="170" value="${esc(p?.titulo)}"></label><label>Resumo<input required name="resumo" maxlength="250" value="${esc(p?.resumo)}"></label><div class="form-row"><label>Editoria<select name="editoria">${options(categories,p?.editoria)}</select></label><label>Autor<input name="autor" required value="${esc(p?.autor||'Redação')}" maxlength="80"></label></div><label>Conteúdo<textarea required name="corpo" maxlength="20000">${esc(p?.corpo)}</textarea></label><div class="actions"><button type="submit" value="salvar" class="button secondary">Salvar ${p?.publicado?'alterações':'rascunho'}</button><button type="submit" value="publicar" class="button">Publicar matéria</button>${p?'<button type="button" id="cancelar" class="button secondary">Cancelar edição</button>':''}</div></form><h2 class="section-title">Matérias cadastradas</h2><div class="panel-list">${items.map(x=>`<div class="panel-item"><div><strong>${esc(x.titulo)}</strong><p class="subtle">${esc(x.editoria)} · ${x.publicado?'Publicada':'Rascunho'}</p></div><div class="actions"><button class="button secondary" data-edit="${esc(x.id)}">Editar</button><button class="button secondary" data-toggle="${esc(x.id)}">${x.publicado?'Despublicar':'Publicar'}</button>${x.publicado?`<a class="button secondary" href="#/materia/${esc(x.id)}">Ver</a>`:''}</div></div>`).join('')}</div><p><button type="button" id="restaurar" class="button secondary">Restaurar dados de exemplo</button></p>`);
- out.insertAdjacentHTML('afterbegin', `<div class="actions" style="margin-top:16px"><span>${esc(currentAccount.name)} · ${currentAccount.canPublish?'Pode publicar':'Pode editar rascunhos'}</span><button id="sair" type="button" class="button secondary">Sair</button></div>`);
- $('#sair').onclick=()=>{
-  currentAccount=undefined;
-  editing=null;
-  storage.set('conta-demo','');
-  panel();
-  $('#demo-login input').focus();
- };
- if (!currentAccount.canPublish) {
-  $$('[data-toggle], button[value="publicar"], #restaurar',out).forEach(button=>button.remove());
-  $$('[data-edit]',out).filter(button=>items.find(item=>item.id===button.dataset.edit)?.publicado).forEach(button=>button.remove());
- }
- const save=t=>{if(storage.set('artigos',items))notice(t);else notice('Alteração feita, mas o navegador não permitiu salvá-la.')};
- $('#editor-form').onsubmit=e=>{e.preventDefault();const fields=Object.fromEntries(new FormData(e.currentTarget));Object.keys(fields).forEach(k=>fields[k]=fields[k].trim());if(Object.values(fields).some(x=>!x)){notice('Preencha todos os campos.');return}
- if (!currentAccount.canPublish && p?.publicado) return;
- const publicar=currentAccount.canPublish && e.submitter?.value==='publicar', item={...(p||{id:'teste-'+Date.now().toString(36),data:today()}),...fields,publicado:publicar||Boolean(p?.publicado)};
- if(p)items=items.map(x=>x.id===p.id?item:x);else items=[item,...items];
- editing=null;save(publicar?'Matéria publicada.':'Matéria salva.');panel(true)};
- $$('[data-edit]',out).forEach(b=>b.onclick=()=>{editing=b.dataset.edit;panel(true)});
- $$('[data-toggle]',out).forEach(b=>b.onclick=()=>{const x=items.find(x=>x.id===b.dataset.toggle);x.publicado=!x.publicado;save(x.publicado?'Matéria publicada.':'Matéria despublicada.');panel();$('[data-toggle="'+x.id+'"]')?.focus()});
- if($('#cancelar'))$('#cancelar').onclick=()=>{editing=null;panel(true)};
- const restore=$('#restaurar');
- if (restore) restore.onclick=()=>{if(confirm('Restaurar as matérias de exemplo e apagar as alterações feitas neste painel?')){items=BASE.map(x=>({...x,publicado:true}));editing=null;save('Matérias de exemplo restauradas.');panel(true)}};
- if(focus)$('#editor-form input').focus();
+const adminFilters = { query: '', category: '', status: '' };
+let showEditor = false;
+function panel(focus = false) {
+  if (!currentAccount) {
+    showDemoLogin();
+    return;
+  }
+
+  const canPublish = currentAccount.canPublish;
+  const article = items.find(item => item.id === editing);
+  const draftCount = items.filter(item => !item.publicado).length;
+  const counts = [
+    ['Matérias cadastradas', items.length],
+    ['Publicadas', items.length - draftCount],
+    ['Rascunhos', draftCount],
+    ['Editorias com conteúdo', new Set(items.map(item => item.editoria)).size]
+  ];
+  const metrics = counts.map(([label, total]) => `<div class="metric"><strong>${total}</strong><span>${label}</span></div>`).join('');
+  const editor = showEditor ? `<section class="admin-card" aria-labelledby="edicao-titulo">
+    <h2 id="edicao-titulo">${article ? 'Editar matéria' : 'Nova matéria'}</h2>
+    <form class="form" id="editor-form">
+      <label>Título<input required name="titulo" maxlength="170" value="${esc(article?.titulo)}"></label>
+      <label>Resumo<input required name="resumo" maxlength="250" value="${esc(article?.resumo)}"></label>
+      <div class="form-row">
+        <label>Editoria<select name="editoria">${options(categories, article?.editoria)}</select></label>
+        <label>Autor<input name="autor" required maxlength="80" value="${esc(article?.autor || 'Redação')}"></label>
+      </div>
+      <label>Conteúdo<textarea name="corpo" required maxlength="20000" rows="8">${esc(article?.corpo)}</textarea></label>
+      <div class="actions">
+        <button class="button${canPublish ? ' secondary' : ''}" value="salvar">${article?.publicado ? 'Salvar alterações' : 'Salvar rascunho'}</button>
+        ${canPublish && !article?.publicado ? '<button class="button" value="publicar">Publicar matéria</button>' : ''}
+        <button class="button secondary" type="button" id="cancelar">Cancelar</button>
+      </div>
+    </form>
+  </section>` : '';
+
+  out.innerHTML = `<div class="admin-content">
+    <header class="admin-heading">
+      <div><span class="overline">Redação · Ambiente de teste</span><h1>Painel editorial</h1><p>${esc(currentAccount.name)} · ${canPublish ? 'Publicação e edição' : 'Criação e edição de rascunhos'}</p></div>
+      <div class="actions"><button class="button" id="nova-materia">Nova matéria</button><button class="button secondary" id="sair">Sair</button></div>
+    </header>
+    <section class="metrics" aria-label="Resumo editorial">${metrics}</section>
+    ${editor}
+    <section class="admin-card" id="materias">
+      <div class="admin-heading"><div><h2>Matérias</h2><p>Ordenadas pela alteração mais recente.</p></div></div>
+      <div class="admin-filters">
+        <label>Buscar<input type="search" id="busca-admin" placeholder="Título, autor ou resumo" value="${esc(adminFilters.query)}"></label>
+        <label>Editoria<select id="categoria-admin"><option value="">Todas</option>${options(categories, adminFilters.category)}</select></label>
+        <label>Status<select id="status-admin"><option value="">Todos</option><option value="published">Publicadas</option><option value="draft">Rascunhos</option></select></label>
+      </div>
+      <p id="total-admin" class="subtle" role="status"></p>
+      <div class="admin-table-wrap" id="lista-admin" tabindex="0" role="region" aria-label="Tabela de matérias"></div>
+    </section>
+    <div class="admin-bottom"><p>As alterações desta demonstração ficam neste navegador.</p>${canPublish ? '<button id="restaurar" type="button" class="button secondary">Restaurar dados de exemplo</button>' : ''}</div>
+  </div>`;
+
+  const search = $('#busca-admin');
+  const category = $('#categoria-admin');
+  const status = $('#status-admin');
+  status.value = adminFilters.status;
+  const save = message => {
+    notice(storage.set('artigos', items) ? message : 'O navegador não permitiu guardar a alteração.');
+  };
+  const openEditor = id => {
+    editing = id;
+    showEditor = true;
+    panel(true);
+  };
+  const refreshList = () => {
+    Object.assign(adminFilters, { query: search.value, category: category.value, status: status.value });
+    const query = norm(search.value).trim();
+    const dateKey = item => item.atualizadoEm || item.data;
+    const filtered = items.filter(item =>
+      norm(`${item.titulo} ${item.autor} ${item.resumo}`).includes(query) &&
+      (!category.value || item.editoria === category.value) &&
+      (!status.value || item.publicado === (status.value === 'published'))
+    ).sort((a, b) => dateKey(b).localeCompare(dateKey(a)));
+    $('#total-admin').textContent = `${filtered.length} de ${items.length} matérias`;
+    const rows = filtered.map(item => `<tr>
+      <th scope="row">${esc(item.titulo)}</th>
+      <td>${esc(item.editoria)}</td><td>${esc(item.autor)}</td>
+      <td><span class="status-chip ${item.publicado ? 'published' : 'draft'}">${item.publicado ? 'Publicada' : 'Rascunho'}</span></td>
+      <td>${date(item.data)}${item.atualizadoEm ? `<small class="update-date">Editada em ${date(item.atualizadoEm.slice(0, 10))}</small>` : ''}</td>
+      <td><div class="actions">
+        ${canPublish || !item.publicado ? `<button class="button secondary" data-edit="${esc(item.id)}">Editar</button>` : ''}
+        ${canPublish ? `<button class="button secondary" data-toggle="${esc(item.id)}">${item.publicado ? 'Despublicar' : 'Publicar'}</button>` : ''}
+        ${item.publicado ? `<a class="button secondary" href="./#/materia/${esc(item.id)}">Ver matéria</a>` : ''}
+      </div></td>
+    </tr>`).join('');
+    $('#lista-admin').innerHTML = rows ? `<table class="admin-table"><thead><tr><th>Título</th><th>Editoria</th><th>Autor</th><th>Status</th><th>Data</th><th>Ações</th></tr></thead><tbody>${rows}</tbody></table>` : empty('Nenhuma matéria corresponde aos filtros.');
+    $$('[data-edit]', out).forEach(button => {
+      button.onclick = () => openEditor(button.dataset.edit);
+    });
+    $$('[data-toggle]', out).forEach(button => {
+      button.onclick = () => {
+        const item = items.find(entry => entry.id === button.dataset.toggle);
+        if (!currentAccount?.canPublish || !item) return;
+        item.publicado = !item.publicado;
+        item.atualizadoEm = new Date().toISOString();
+        save(item.publicado ? 'Matéria publicada.' : 'Matéria despublicada.');
+        panel();
+        ($(`[data-toggle="${item.id}"]`) || $('#status-admin')).focus();
+      };
+    });
+  };
+  search.oninput = refreshList;
+  category.onchange = status.onchange = refreshList;
+  refreshList();
+
+  $('#nova-materia').onclick = () => openEditor(null);
+  $('#sair').onclick = () => {
+    currentAccount = undefined;
+    editing = null;
+    showEditor = false;
+    Object.assign(adminFilters, { query: '', category: '', status: '' });
+    storage.set('conta-demo', '');
+    panel();
+    $('#demo-login input').focus();
+  };
+  if (showEditor) {
+    const closeEditor = () => {
+      editing = null;
+      showEditor = false;
+      panel();
+      $('#nova-materia').focus();
+    };
+    $('#cancelar').onclick = closeEditor;
+    $('#editor-form').onsubmit = event => {
+      event.preventDefault();
+      if (!currentAccount || (article?.publicado && !currentAccount.canPublish)) return;
+      const fields = Object.fromEntries(Array.from(new FormData(event.currentTarget), ([key, value]) => [key, value.trim()]));
+      if (Object.values(fields).some(value => !value)) {
+        notice('Preencha todos os campos.');
+        return;
+      }
+      const publish = currentAccount.canPublish && event.submitter?.value === 'publicar';
+      const item = {
+        ...(article || { id: 'teste-' + Date.now().toString(36), data: today() }),
+        ...fields,
+        publicado: publish || Boolean(article?.publicado),
+        atualizadoEm: new Date().toISOString()
+      };
+      items = article ? items.map(entry => entry.id === item.id ? item : entry) : [item, ...items];
+      save(publish ? 'Matéria publicada.' : 'Matéria salva.');
+      closeEditor();
+    };
+  }
+  const restore = $('#restaurar');
+  if (restore) restore.onclick = () => {
+    if (!confirm('Restaurar as matérias de exemplo e apagar as alterações feitas neste painel?')) return;
+    items = BASE.map(item => ({ ...item, publicado: true }));
+    editing = null;
+    showEditor = false;
+    save('Matérias de exemplo restauradas.');
+    panel();
+  };
+  if (focus) $('#editor-form input')?.focus();
 }
 function route(focus=false){
+ if (isAdmin) { panel(); return; }
  if(location.hash==='#conteudo'){out.focus();return}
  if('speechSynthesis' in window)speechSynthesis.cancel();
  const path=location.hash.replace(/^#\/?/,'');
@@ -174,7 +303,7 @@ function route(focus=false){
  }
  else if(kind==='edicoes')out.innerHTML=page(title('Edições em PDF')+`<article class="edition">${image('capa.jpg','Capa do Jornal Marabá utilizada como referência')}<div><h2>Edição de amostra</h2><p>Novembro de 2026</p><p>PDF demonstrativo criado a partir da capa fornecida. A edição oficial completa não foi disponibilizada.</p><a class="button" href="midia/edicao-amostra.pdf" target="_blank" rel="noopener">Ler edição</a></div></article>`);
  else if(kind==='contato')contact();
- else if(kind==='painel')panel();
+ else if(kind==='painel')location.replace('admin.html');
  else if(kind==='quem-somos')out.innerHTML=page(title('Quem Somos','O Jornal Marabá é um projeto da Mídia Moderna Comunicação que reúne informação local, jornal impresso e portal de notícias.')+`<p class="intro">Informar, inspirar e conectar são compromissos do projeto com a cidadania, o comércio e as notícias de Marabá. Rádio e TV web fazem parte dos próximos passos previstos.</p><p class="intro">O portal abre espaço para sugestões de pauta e aproxima os leitores dos acontecimentos da cidade.</p>${a('Fale com a redação','contato')}`);
  else if(kind==='privacidade')out.innerHTML=page(title('Política de Privacidade','Informações sobre este protótipo de entrevista.')+`<p class="intro">Este protótipo usa armazenamento local para guardar o voto demonstrativo, as preferências de acessibilidade e as alterações nas matérias. Esses dados ficam no navegador e não são compartilhados entre dispositivos.</p><p class="intro">O formulário apenas simula o envio: suas entradas não são transmitidas nem armazenadas. Use dados fictícios nos testes. Os links de compartilhamento podem abrir serviços externos.</p><p class="intro">Para apagar os dados locais do protótipo, limpe os dados deste site no seu navegador.</p>`);
  else out.innerHTML=page(title('Página não encontrada','A página pode ter sido removida ou ainda não estar disponível.')+a('Voltar à home',''));
